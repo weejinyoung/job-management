@@ -15,7 +15,6 @@ export class AppException extends Error {
     this.responseCode = responseCode;
     this.message = errorMessage;
 
-    // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AppException);
     }

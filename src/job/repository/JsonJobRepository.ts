@@ -15,29 +15,24 @@ export class JsonJobRepository implements JobRepository {
   private readonly JOB_MAP_PATH = '/jobMap';
 
   constructor() {
-    // 데이터베이스 초기화 - 세 번째 매개변수(humanReadable)는 필요에 따라 설정
     this.db = new JsonDB(new Config('jobs', true, true, '/'));
     this.initialize();
   }
 
   private async initialize(): Promise<void> {
     try {
-      // 새로운 형식의 데이터베이스 구조 확인 (맵 방식)
       try {
         await this.db.getData(this.JOB_MAP_PATH);
       } catch (error) {
-        // jobMap 경로가 없으면 빈 객체로 초기화
         await this.db.push(this.JOB_MAP_PATH, {}, false);
       }
     } catch (error) {
-      // 파일이 없는 경우에도 초기화
       await this.db.push(this.JOB_MAP_PATH, {}, false);
     }
   }
 
   async saveAll(jobs: Job[]): Promise<void> {
     try {
-      // 각 작업을 개별적으로 저장
       for (const job of jobs) {
         await this.db.push(`${this.JOB_MAP_PATH}/${job.id}`, jobToJSON(job), false);
       }
@@ -106,7 +101,6 @@ export class JsonJobRepository implements JobRepository {
 
   async findById(id: string): Promise<Job | null> {
     try {
-      // 직접 특정 ID의 작업 데이터 가져오기
       const jobData = await this.db.getData(`${this.JOB_MAP_PATH}/${id}`);
       return jobFromJSON(jobData);
     } catch (error) {
@@ -119,16 +113,13 @@ export class JsonJobRepository implements JobRepository {
 
   async create(job: Job): Promise<Job> {
     try {
-      // 직접 ID로 확인
       try {
         await this.db.getData(`${this.JOB_MAP_PATH}/${job.id}`);
-        // 이미 존재하면 예외 발생
         throw new AppException(JobResponseCode.JOB_ALREADY_EXISTS);
       } catch (error) {
         if (error instanceof AppException) {
           throw error;
         }
-        // 존재하지 않는 경우 (에러가 발생한 경우) 생성
         await this.db.push(`${this.JOB_MAP_PATH}/${job.id}`, jobToJSON(job), false);
         return job;
       }
@@ -142,14 +133,11 @@ export class JsonJobRepository implements JobRepository {
 
   async update(job: Job): Promise<Job> {
     try {
-      // 직접 ID로 확인
       try {
         await this.db.getData(`${this.JOB_MAP_PATH}/${job.id}`);
-        // 존재하면 업데이트
         await this.db.push(`${this.JOB_MAP_PATH}/${job.id}`, jobToJSON(job), false);
         return job;
       } catch (error) {
-        // 존재하지 않으면 예외 발생
         throw new AppException(JobResponseCode.JOB_NOT_FOUND);
       }
     } catch (error) {
@@ -162,14 +150,11 @@ export class JsonJobRepository implements JobRepository {
 
   async delete(id: string): Promise<boolean> {
     try {
-      // 존재 여부 확인
       try {
         await this.db.getData(`${this.JOB_MAP_PATH}/${id}`);
-        // 존재하면 삭제
         await this.db.delete(`${this.JOB_MAP_PATH}/${id}`);
         return true;
       } catch (error) {
-        // 존재하지 않으면 예외 발생
         throw new AppException(JobResponseCode.JOB_NOT_FOUND);
       }
     } catch (error) {
@@ -181,7 +166,6 @@ export class JsonJobRepository implements JobRepository {
   }
 
   async findByTitle(title: string): Promise<Job[]> {
-    // 제목으로 검색은 전체 데이터 로드 필요
     try {
       const jobs = await this.findAll();
       return jobs.filter((job) =>
@@ -196,7 +180,6 @@ export class JsonJobRepository implements JobRepository {
     status?: JobStatusType;
     title?: string;
   }): Promise<Job[]> {
-    // 검색은 전체 데이터 로드 필요
     try {
       let jobs = await this.findAll();
 
@@ -218,11 +201,9 @@ export class JsonJobRepository implements JobRepository {
 
   async findJobsByStatus(status: JobStatusType): Promise<Job[]> {
     try {
-      // 객체의 키만 먼저 가져옵니다
       const jobsObj = await this.db.getData(this.JOB_MAP_PATH);
       const keys = Object.keys(jobsObj);
 
-      // 상태를 확인하기 위해 각 작업을 개별적으로 확인합니다
       const matchingJobs: Job[] = [];
       for (const key of keys) {
         const jobData = await this.db.getData(`${this.JOB_MAP_PATH}/${key}`);

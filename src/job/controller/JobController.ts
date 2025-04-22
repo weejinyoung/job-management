@@ -30,9 +30,6 @@ import { Page } from '../../common/response/Page';
 export class JobController {
   constructor(private readonly jobService: JobService) {}
 
-  /**
-   * 작업 생성
-   */
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: '새로운 작업 생성' })
@@ -45,9 +42,6 @@ export class JobController {
     return this.jobService.create(createJobDto);
   }
 
-  /**
-   * 작업 목록 조회 (검색 및 페이지네이션)
-   */
   @Get()
   @ApiOperation({ summary: '작업 목록 조회' })
   @ApiQuery({
@@ -89,9 +83,6 @@ export class JobController {
       : this.jobService.search(searchJobDto);
   }
 
-  /**
-   * 특정 작업 조회
-   */
   @Get(':id')
   @ApiOperation({ summary: '특정 작업 조회' })
   @ApiParam({ name: 'id', description: '작업 ID' })
@@ -99,9 +90,6 @@ export class JobController {
     return this.jobService.findById(id);
   }
 
-  /**
-   * 작업 정보 업데이트
-   */
   @Patch(':id')
   @ApiOperation({ summary: '작업 정보 업데이트' })
   @ApiParam({ name: 'id', description: '작업 ID' })
@@ -113,9 +101,6 @@ export class JobController {
     return this.jobService.update(id, updateJobDto);
   }
 
-  /**
-   * 작업 완료 처리
-   */
   @Patch(':id/complete')
   @ApiOperation({ summary: '작업 완료 처리' })
   @ApiParam({ name: 'id', description: '작업 ID' })
@@ -123,9 +108,6 @@ export class JobController {
     return this.jobService.completeJob(id);
   }
 
-  /**
-   * 작업 취소 처리
-   */
   @Patch(':id/cancel')
   @ApiOperation({ summary: '작업 취소 처리' })
   @ApiParam({ name: 'id', description: '작업 ID' })
@@ -133,9 +115,6 @@ export class JobController {
     return this.jobService.cancelJob(id);
   }
 
-  /**
-   * 취소된 작업 재개
-   */
   @Put(':id/reopen')
   @ApiOperation({ summary: '취소된 작업 재개' })
   @ApiParam({ name: 'id', description: '작업 ID' })
@@ -143,9 +122,6 @@ export class JobController {
     return this.jobService.reopenJob(id);
   }
 
-  /**
-   * 작업 삭제
-   */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '작업 삭제' })
