@@ -7,6 +7,7 @@ export abstract class BaseResponseCode {
   static readonly OK = '0000';
 
   // 공통 에러 코드 (9000~9999)
+  static readonly LOCK_ACQUISITION_FAILED = '9399';
   static readonly BAD_REQUEST = '9400';
   static readonly WRONG_PARAMETER = '9401';
   static readonly METHOD_NOT_ALLOWED = '9402';
@@ -19,6 +20,10 @@ export abstract class BaseResponseCode {
     string,
     ResponseCodeDetails
   > = {
+    [BaseResponseCode.LOCK_ACQUISITION_FAILED]: {
+      code: BaseResponseCode.LOCK_ACQUISITION_FAILED,
+      message: '잠시 후 다시 시도해주세요.',
+    },
     [BaseResponseCode.OK]: {
       code: BaseResponseCode.OK,
       message: '정상 처리되었습니다.',
