@@ -34,7 +34,11 @@ export class JsonJobRepository implements JobRepository {
   async saveAll(jobs: Job[]): Promise<void> {
     try {
       for (const job of jobs) {
-        await this.db.push(`${this.JOB_MAP_PATH}/${job.id}`, jobToJSON(job), false);
+        await this.db.push(
+          `${this.JOB_MAP_PATH}/${job.id}`,
+          jobToJSON(job),
+          false,
+        );
       }
     } catch (error) {
       throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
@@ -120,7 +124,11 @@ export class JsonJobRepository implements JobRepository {
         if (error instanceof AppException) {
           throw error;
         }
-        await this.db.push(`${this.JOB_MAP_PATH}/${job.id}`, jobToJSON(job), false);
+        await this.db.push(
+          `${this.JOB_MAP_PATH}/${job.id}`,
+          jobToJSON(job),
+          false,
+        );
         return job;
       }
     } catch (error) {
@@ -135,7 +143,11 @@ export class JsonJobRepository implements JobRepository {
     try {
       try {
         await this.db.getData(`${this.JOB_MAP_PATH}/${job.id}`);
-        await this.db.push(`${this.JOB_MAP_PATH}/${job.id}`, jobToJSON(job), false);
+        await this.db.push(
+          `${this.JOB_MAP_PATH}/${job.id}`,
+          jobToJSON(job),
+          false,
+        );
         return job;
       } catch (error) {
         throw new AppException(JobResponseCode.JOB_NOT_FOUND);
@@ -215,6 +227,60 @@ export class JsonJobRepository implements JobRepository {
       }
 
       return matchingJobs;
+    } catch (error) {
+      if (error.message && error.message.includes("Can't find dataPath")) {
+        return [];
+      }
+      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findJobsByIds(ids: string[]): Promise<Job[]> {
+    try {
+      if (ids.length === 0) {
+        return [];
+      }
+
+      const jobs: Job[] = [];
+
+      for (const id of ids) {
+        try {
+          const jobData = await this.db.getData(`${this.JOB_MAP_PATH}/${id}`);
+          jobs.push(jobFromJSON(jobData));
+        } catch (error) {
+          if (
+            !error.message ||
+            !error.message.includes("Can't find dataPath")
+          ) {
+            throw error;
+          }
+        }
+      }
+
+      return jobs;
+    } catch (error) {
+      if (error instanceof AppException) {
+        throw error;
+      }
+      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findJobIdsByStatus(status: JobStatusType): Promise<string[]> {
+    try {
+      const jobsObj = await this.db.getData(this.JOB_MAP_PATH);
+      const keys = Object.keys(jobsObj);
+      const matchingIds: string[] = [];
+
+      for (const key of keys) {
+        const jobData = await this.db.getData(`${this.JOB_MAP_PATH}/${key}`);
+
+        if (jobData.status === status) {
+          matchingIds.push(key);
+        }
+      }
+
+      return matchingIds;
     } catch (error) {
       if (error.message && error.message.includes("Can't find dataPath")) {
         return [];

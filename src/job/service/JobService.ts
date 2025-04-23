@@ -5,12 +5,14 @@ import { JobResponseCode } from '../response/JobResponseCode';
 import { CreateJobDto, JobDto, SearchJobDto, UpdateJobDto } from '../dto/Dtos';
 import { JobRepository } from '../repository/JobRepository';
 import { Page } from '../../common/response/Page';
+import { LockManager } from '../../common/lock/LockManager';
 
 @Injectable()
 export class JobService {
   constructor(
     @Inject('impl')
     private readonly jobRepository: JobRepository,
+    private readonly lockManager: LockManager,
   ) {}
 
   async create(createJobDto: CreateJobDto): Promise<JobDto> {
@@ -66,88 +68,114 @@ export class JobService {
   }
 
   async update(id: string, updateJobDto: UpdateJobDto): Promise<JobDto> {
-    // 유효한 업데이트 데이터인지 확인
-    if (!updateJobDto.title && !updateJobDto.description) {
-      // 변경 사항이 없으면 현재 상태 반환
-      return this.findById(id);
-    }
+    // 락을 사용하여 동시성 제어
+    return this.lockManager.withLock(id, async () => {
+      // 유효한 업데이트 데이터인지 확인
+      if (!updateJobDto.title && !updateJobDto.description) {
+        // 변경 사항이 없으면 현재 상태 반환
+        return this.findById(id);
+      }
 
-    const job = await this.jobRepository.findById(id);
-    if (!job) {
-      throw new AppException(JobResponseCode.JOB_NOT_FOUND);
-    }
+      const job = await this.jobRepository.findById(id);
+      if (!job) {
+        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+      }
 
-    // 변경된 필드만 업데이트
-    if (updateJobDto.title) {
-      job.updateTitle(updateJobDto.title);
-    }
+      // 변경된 필드만 업데이트
+      if (updateJobDto.title) {
+        job.updateTitle(updateJobDto.title);
+      }
 
-    if (updateJobDto.description) {
-      job.updateDescription(updateJobDto.description);
-    }
+      if (updateJobDto.description) {
+        job.updateDescription(updateJobDto.description);
+      }
 
-    const updatedJob = await this.jobRepository.update(job);
-    return JobDto.fromEntity(updatedJob);
+      const updatedJob = await this.jobRepository.update(job);
+      return JobDto.fromEntity(updatedJob);
+    });
   }
 
   async completeJob(id: string): Promise<JobDto> {
-    const job = await this.jobRepository.findById(id);
-    if (!job) {
-      throw new AppException(JobResponseCode.JOB_NOT_FOUND);
-    }
-    job.complete();
-    const updatedJob = await this.jobRepository.update(job);
-    return JobDto.fromEntity(updatedJob);
+    // 락을 사용하여 동시성 제어
+    return this.lockManager.withLock(id, async () => {
+      const job = await this.jobRepository.findById(id);
+      if (!job) {
+        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+      }
+      job.complete();
+      const updatedJob = await this.jobRepository.update(job);
+      return JobDto.fromEntity(updatedJob);
+    });
   }
 
   async cancelJob(id: string): Promise<JobDto> {
-    const job = await this.jobRepository.findById(id);
-    if (!job) {
-      throw new AppException(JobResponseCode.JOB_NOT_FOUND);
-    }
-    job.cancel();
-    const updatedJob = await this.jobRepository.update(job);
-    return JobDto.fromEntity(updatedJob);
+    // 락을 사용하여 동시성 제어
+    return this.lockManager.withLock(id, async () => {
+      const job = await this.jobRepository.findById(id);
+      if (!job) {
+        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+      }
+      job.cancel();
+      const updatedJob = await this.jobRepository.update(job);
+      return JobDto.fromEntity(updatedJob);
+    });
   }
 
   async reopenJob(id: string): Promise<JobDto> {
-    const job = await this.jobRepository.findById(id);
-    if (!job) {
-      throw new AppException(JobResponseCode.JOB_NOT_FOUND);
-    }
-    job.reopen();
-    const updatedJob = await this.jobRepository.update(job);
-    return JobDto.fromEntity(updatedJob);
+    // 락을 사용하여 동시성 제어
+    return this.lockManager.withLock(id, async () => {
+      const job = await this.jobRepository.findById(id);
+      if (!job) {
+        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+      }
+      job.reopen();
+      const updatedJob = await this.jobRepository.update(job);
+      return JobDto.fromEntity(updatedJob);
+    });
   }
 
   async completeJobs(): Promise<number> {
-    // 대기 상태인 작업만 가져오기
-    const jobsToUpdate = await this.jobRepository.findJobsByStatus(
-      JobStatus.PENDING,
-    );
+    // 1. 대기 상태인 작업 ID만 먼저 조회
+    const pendingJobIds = await this.jobRepository.findJobIdsByStatus(JobStatus.PENDING);
 
     // 작업이 없으면 바로 반환
-    if (jobsToUpdate.length === 0) {
+    if (pendingJobIds.length === 0) {
       return 0;
     }
 
-    // 각 작업을 완료 상태로 변경
-    for (const job of jobsToUpdate) {
-      job.complete();
-    }
+    // 2. 여러 작업에 대한 락 획득 및 작업 수행
+    return this.lockManager.withMultipleLocks(pendingJobIds, async () => {
+      // 3. 락 획득 후 다시 최신 상태의 작업들을 조회
+      const jobsToUpdate = await this.jobRepository.findJobsByIds(pendingJobIds);
 
-    // 변경된 작업들 저장
-    await this.jobRepository.saveAll(jobsToUpdate);
+      // 실제로 pending 상태인 작업만 필터링 (다른 프로세스에 의해 상태가 변경되었을 수 있음)
+      const pendingJobs = jobsToUpdate.filter(job => job.status === JobStatus.PENDING);
 
-    return jobsToUpdate.length;
+      if (pendingJobs.length === 0) {
+        return 0;
+      }
+
+      // 4. 각 작업을 완료 상태로 변경
+      for (const job of pendingJobs) {
+        job.complete();
+      }
+
+      // 변경된 작업들 저장
+      await this.jobRepository.saveAll(pendingJobs);
+
+      return pendingJobs.length;
+    });
   }
 
   async delete(id: string): Promise<boolean> {
-    const job = await this.jobRepository.findById(id);
-    if (!job) {
-      throw new AppException(JobResponseCode.JOB_NOT_FOUND);
-    }
+    // 락을 사용하여 동시성 제어
+    return this.lockManager.withLock(id, async () => {
+      const job = await this.jobRepository.findById(id);
+      if (!job) {
+        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+      }
 
-    return this.jobRepository.delete(id);
+      return this.jobRepository.delete(id);
+    });
   }
 }

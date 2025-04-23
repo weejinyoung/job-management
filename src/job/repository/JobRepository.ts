@@ -2,7 +2,6 @@ import { Job, JobStatusType } from '../entity/Job';
 import { Page } from '../../common/response/Page';
 
 export interface JobRepository {
-
   findAll(): Promise<Job[]>;
 
   findAllPaginated(page: number, size: number): Promise<Page<Job>>;
@@ -22,4 +21,8 @@ export interface JobRepository {
   findJobsByStatus(status: JobStatusType): Promise<Job[]>;
 
   saveAll(jobs: Job[]): Promise<void>;
+
+  findJobsByIds(ids: string[]): Promise<Job[]>;
+
+  findJobIdsByStatus(status: JobStatusType): Promise<string[]>;
 }
