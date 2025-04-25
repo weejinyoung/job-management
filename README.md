@@ -57,8 +57,8 @@
     "title": "데이터베이스 마이그레이션",
     "description": "기존 MySQL에서 PostgreSQL로 데이터 마이그레이션",
     "status": "pending",
-    "createdAt": "2025-04-25T11:00:46.938Z",
-    "updatedAt": "2025-04-25T11:00:46.938Z"
+    "createdAt": "2025-04-21 08:30:45", 
+    "updatedAt": "2025-04-21 08:30:45"
   }
 }
 ```
@@ -102,24 +102,24 @@
       "title": "데이터베이스 마이그레이션",
       "description": "기존 MySQL에서 PostgreSQL로 데이터 마이그레이션",
       "status": "completed",
-      "createdAt": "2025-04-25T09:06:15.521Z",
-      "updatedAt": "2025-04-25T09:07:00.018Z"
+      "createdAt": "2025-04-21 08:30:45",
+      "updatedAt": "2025-04-21 08:30:45"
     },
     {
       "id": "f4577931-a1e1-49d3-b10a-ad16f7bd08bd",
       "title": "데이터베이스 마이그레이션",
       "description": "기존 MySQL에서 PostgreSQL로 데이터 마이그레이션",
       "status": "completed",
-      "createdAt": "2025-04-25T09:07:12.685Z",
-      "updatedAt": "2025-04-25T09:08:00.017Z"
+      "createdAt": "2025-04-21 08:30:45",
+      "updatedAt": "2025-04-21 08:30:45"
     },
     {
       "id": "5a47c8d7-621e-4d7c-a75f-ee251f8be22d",
       "title": "데이터베이스 마이그레이션",
       "description": "기존 MySQL에서 PostgreSQL로 데이터 마이그레이션",
       "status": "completed",
-      "createdAt": "2025-04-25T09:07:12.996Z",
-      "updatedAt": "2025-04-25T09:08:00.017Z"
+      "createdAt": "2025-04-21 08:30:45",
+      "updatedAt": "2025-04-21 08:30:45"
     },
     ...
   ]
@@ -152,8 +152,8 @@
     "title": "데이터베이스 마이그레이션",
     "description": "기존 MySQL에서 PostgreSQL로 데이터 마이그레이션",
     "status": "pending",
-    "createdAt": "2025-04-25T11:00:46.938Z",
-    "updatedAt": "2025-04-25T11:00:46.938Z"
+    "createdAt": "2025-04-21 08:30:45",
+    "updatedAt": "2025-04-21 08:30:45"
   }
 }
 
@@ -192,8 +192,8 @@
     "title": "수정된 데이터베이스 마이그레이션",
     "description": "수정된 마이그레이션 설명",
     "status": "pending",
-    "createdAt": "2025-04-25T11:00:46.938Z",
-    "updatedAt": "2025-04-25T11:05:00.000Z" // 업데이트 시간 변경
+    "createdAt": "2025-04-21 08:30:45",
+    "updatedAt": "2025-04-22 08:30:45" // 업데이트 시간 변경
   }
 }
 
@@ -225,8 +225,8 @@
     "title": "데이터베이스 마이그레이션",
     "description": "기존 MySQL에서 PostgreSQL로 데이터 마이그레이션",
     "status": "completed", // 상태 변경
-    "createdAt": "2025-04-25T11:00:46.938Z",
-    "updatedAt": "2025-04-25T11:10:00.000Z" // 업데이트 시간 변경
+    "createdAt": "2025-04-21 08:30:45",
+    "updatedAt": "2025-04-22 08:30:45" // 업데이트 시간 변경
   }
 }
 
@@ -258,8 +258,8 @@
     "title": "데이터베이스 마이그레이션",
     "description": "기존 MySQL에서 PostgreSQL로 데이터 마이그레이션",
     "status": "canceled", // 상태 변경
-    "createdAt": "2025-04-25T11:00:46.938Z",
-    "updatedAt": "2025-04-25T11:15:00.000Z" // 업데이트 시간 변경
+    "createdAt": "2025-04-21 08:30:45",
+    "updatedAt": "2025-04-22 08:30:45" // 업데이트 시간 변경
   }
 }
 
@@ -290,9 +290,9 @@
     "id": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
     "title": "데이터베이스 마이그레이션",
     "description": "기존 MySQL에서 PostgreSQL로 데이터 마이그레이션",
-    "status": "pending", // 상태 변경 (재개 시 pending으로 돌아간다고 가정)
-    "createdAt": "2025-04-25T11:00:46.938Z",
-    "updatedAt": "2025-04-25T11:20:00.000Z" // 업데이트 시간 변경
+    "status": "pending", // 상태 변경 (재개 시 pending으로 돌아감)
+    "createdAt": "2025-04-21 08:30:45",
+    "updatedAt": "2025-04-22 08:30:45" // 업데이트 시간 변경
   }
 }
 
