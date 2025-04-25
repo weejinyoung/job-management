@@ -110,13 +110,15 @@ export class JobService {
     });
   }
 
-  async completeJobs(): Promise<number> {
+  async completeJobsWithIds(): Promise<{ count: number; jobIds: string[] }> {
     const pendingJobIds = await this.jobRepository.findJobIdsByStatus(
       JobStatus.PENDING,
     );
+
     if (pendingJobIds.length === 0) {
-      return 0;
+      return { count: 0, jobIds: [] };
     }
+
     return await this.lockManager.withMultipleLocks(pendingJobIds, async () => {
       const jobsToUpdate =
         await this.jobRepository.findJobsByIds(pendingJobIds);
@@ -127,13 +129,18 @@ export class JobService {
       );
 
       if (pendingJobs.length === 0) {
-        return 0;
+        return { count: 0, jobIds: [] };
       }
+
+      const completedJobIds: string[] = [];
+
       for (const job of pendingJobs) {
         job.complete();
+        completedJobIds.push(job.id);
       }
+
       await this.jobRepository.saveAll(pendingJobs);
-      return pendingJobs.length;
+      return { count: pendingJobs.length, jobIds: completedJobIds };
     });
   }
 

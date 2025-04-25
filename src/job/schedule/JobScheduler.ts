@@ -16,10 +16,10 @@ export class JobScheduler {
     this.logger.log('Scheduled job started: Processing pending jobs');
 
     try {
-      // pending 상태의 모든 작업을 completed로 업데이트
-      const updatedCount = await this.jobService.completeJobs();
+      const result = await this.jobService.completeJobsWithIds();
+      const { count, jobIds } = result;
 
-      const logMessage = `[${new Date().toISOString()}] Updated ${updatedCount} pending jobs to completed`;
+      const logMessage = `[${new Date().toISOString()}] Updated ${count} pending jobs to completed. Job IDs: ${jobIds.join(', ')}`;
       this.logger.log(logMessage);
 
       // 파일에 로그 기록
