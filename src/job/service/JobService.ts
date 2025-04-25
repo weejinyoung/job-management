@@ -123,7 +123,6 @@ export class JobService {
       const jobsToUpdate =
         await this.jobRepository.findJobsByIds(pendingJobIds);
 
-      // 실제로 pending 상태인 작업만 필터링 (다른 프로세스에 의해 상태가 변경되었을 수 있음)
       const pendingJobs = jobsToUpdate.filter(
         (job) => job.status === JobStatus.PENDING,
       );
