@@ -127,13 +127,10 @@ describe('JobService Concurrency Tests', () => {
     const individualCompletions: Promise<JobDto>[] = additionalJobIds.map(
       (id) => service.completeJob(id),
     );
-    const batchCompletion = service.completeJobs(); // 모든 대기 작업 일괄 완료
+    const batchCompletion = service.completeJobsWithIds(); // 모든 대기 작업 일괄 완료
 
     // 모든 작업을 동시에 실행
-    await Promise.all<JobDto | number>([
-      ...individualCompletions,
-      batchCompletion,
-    ]);
+    await Promise.all([...individualCompletions, batchCompletion]);
 
     // 모든 작업이 올바르게 완료되었는지 확인
     for (const id of additionalJobIds) {

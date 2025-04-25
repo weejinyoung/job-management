@@ -102,13 +102,13 @@ export class JobDto {
     description: '작업 생성 시간',
     example: '2023-04-22T12:34:56.789Z',
   })
-  createdAt: Date;
+  createdAt: string;
 
   @ApiProperty({
     description: '작업 수정 시간',
     example: '2023-04-22T12:34:56.789Z',
   })
-  updatedAt: Date;
+  updatedAt: string;
 
   private constructor(job: Job) {
     this.id = job.id;
