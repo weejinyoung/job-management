@@ -1,4 +1,10 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { Job, JobStatus, JobStatusType } from '../entity/Job';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -19,40 +25,28 @@ export class CreateJobDto {
   })
   @IsNotEmpty({ message: '설명은 필수 입력 항목입니다.' })
   @IsString({ message: '설명은 문자열이어야 합니다.' })
+  @MinLength(1, { message: '설명은 최소 1자 이상이어야 합니다.' })
   description: string;
 }
 
 export class UpdateJobDto {
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '작업 제목',
     example: '수정된 데이터베이스 마이그레이션',
   })
-  @IsOptional()
+  @IsNotEmpty({ message: '제목은 필수 입력 항목입니다.' })
   @IsString({ message: '제목은 문자열이어야 합니다.' })
-  title?: string;
+  @MinLength(1, { message: '제목은 최소 1자 이상이어야 합니다.' })
+  title: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '작업 설명',
     example: '수정된 마이그레이션 설명',
   })
-  @IsOptional()
+  @IsNotEmpty({ message: '설명은 필수 입력 항목입니다.' })
   @IsString({ message: '설명은 문자열이어야 합니다.' })
-  description?: string;
-}
-
-export class UpdateJobStatusDto {
-  @ApiProperty({
-    description: '작업 상태',
-    enum: JobStatus.values(),
-    enumName: 'JobStatusType',
-    example: 'in_progress',
-    required: true,
-  })
-  @IsNotEmpty({ message: '상태는 필수 입력 항목입니다.' })
-  @IsEnum(JobStatus.values(), {
-    message: '유효한 작업 상태가 아닙니다.',
-  })
-  status: JobStatusType;
+  @MinLength(1, { message: '설명은 최소 1자 이상이어야 합니다.' })
+  description: string;
 }
 
 export class SearchJobDto {
@@ -75,34 +69,6 @@ export class SearchJobDto {
   @IsOptional()
   @IsString({ message: '제목은 문자열이어야 합니다.' })
   title?: string;
-}
-
-export class UpdateBulkStatusDto {
-  @ApiProperty({
-    description: '현재 작업 상태',
-    enum: JobStatus.values(),
-    enumName: 'JobStatusType',
-    example: 'pending',
-    required: true,
-  })
-  @IsNotEmpty({ message: '현재 상태는 필수 입력 항목입니다.' })
-  @IsEnum(JobStatus.values(), {
-    message: '유효한 작업 상태가 아닙니다.',
-  })
-  fromStatus: JobStatusType;
-
-  @ApiProperty({
-    description: '변경할 작업 상태',
-    enum: JobStatus.values(),
-    enumName: 'JobStatusType',
-    example: 'in_progress',
-    required: true,
-  })
-  @IsNotEmpty({ message: '변경할 상태는 필수 입력 항목입니다.' })
-  @IsEnum(JobStatus.values(), {
-    message: '유효한 작업 상태가 아닙니다.',
-  })
-  toStatus: JobStatusType;
 }
 
 export class JobDto {
@@ -144,7 +110,7 @@ export class JobDto {
   })
   updatedAt: Date;
 
-  constructor(job: Job) {
+  private constructor(job: Job) {
     this.id = job.id;
     this.title = job.title;
     this.description = job.description;

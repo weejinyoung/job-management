@@ -33,35 +33,49 @@ export class Job extends BaseEntity {
   }
 
   complete(): void {
-    if (this.status === JobStatus.CANCELED) {
-      throw new AppException(JobResponseCode.CANNOT_COMPLETE_CANCELED_JOB);
+    switch (this.status) {
+      case JobStatus.CANCELED:
+        throw new AppException(JobResponseCode.CANNOT_COMPLETE_CANCELED_JOB);
+      case JobStatus.COMPLETED:
+        throw new AppException(JobResponseCode.ALREADY_COMPLETED_JOB);
+      case JobStatus.PENDING:
+        this.status = JobStatus.COMPLETED;
+        this.updateTimestamp();
+        break;
     }
-    if (this.status === JobStatus.COMPLETED) {
-      throw new AppException(JobResponseCode.ALREADY_COMPLETED_JOB);
-    }
-    this.status = JobStatus.COMPLETED;
-    this.updateTimestamp();
   }
 
   cancel(): void {
-    if (this.status === JobStatus.COMPLETED) {
-      throw new AppException(JobResponseCode.CANNOT_CANCEL_COMPLETED_JOB);
+    switch (this.status) {
+      case JobStatus.COMPLETED:
+        throw new AppException(JobResponseCode.CANNOT_CANCEL_COMPLETED_JOB);
+      case JobStatus.CANCELED:
+        throw new AppException(JobResponseCode.ALREADY_CANCELED_JOB);
+      case JobStatus.PENDING:
+        this.status = JobStatus.CANCELED;
+        this.updateTimestamp();
+        break;
     }
-    if (this.status === JobStatus.CANCELED) {
-      throw new AppException(JobResponseCode.ALREADY_CANCELED_JOB);
-    }
-    this.status = JobStatus.CANCELED;
-    this.updateTimestamp();
   }
 
   reopen(): void {
-    if (this.status === JobStatus.COMPLETED) {
-      throw new AppException(JobResponseCode.CANNOT_REOPEN_COMPLETED_JOB);
+    switch (this.status) {
+      case JobStatus.COMPLETED:
+        throw new AppException(JobResponseCode.CANNOT_REOPEN_COMPLETED_JOB);
+      case JobStatus.PENDING:
+        throw new AppException(JobResponseCode.CANNOT_REOPEN_PENDING_JOB);
+      case JobStatus.CANCELED:
+        this.status = JobStatus.PENDING;
+        this.updateTimestamp();
+        break;
     }
-    if (this.status === JobStatus.PENDING) {
-      throw new AppException(JobResponseCode.CANNOT_REOPEN_COMPLETED_JOB);
+  }
+
+  updateDescription(description: string): void {
+    if (!description || description.trim() === '') {
+      throw new AppException(JobResponseCode.EMPTY_DESCRIPTION);
     }
-    this.status = JobStatus.PENDING;
+    this.description = description;
     this.updateTimestamp();
   }
 
@@ -70,14 +84,6 @@ export class Job extends BaseEntity {
       throw new AppException(JobResponseCode.EMPTY_TITLE);
     }
     this.title = title;
-    this.updateTimestamp();
-  }
-
-  updateDescription(description: string): void {
-    if (!description || description.trim() === '') {
-      throw new AppException(JobResponseCode.EMPTY_DESCRIPTION);
-    }
-    this.description = description;
     this.updateTimestamp();
   }
 }

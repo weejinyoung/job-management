@@ -3,13 +3,14 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/exception/HttpExceptionFilter';
 import { TransformInterceptor } from './common/response/ResponseTransformInterceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 전역 예외 필터 등록
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
     .setTitle('Job Management API')

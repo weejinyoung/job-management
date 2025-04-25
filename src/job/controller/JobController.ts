@@ -39,7 +39,7 @@ export class JobController {
     type: JobDto,
   })
   async createJob(@Body() createJobDto: CreateJobDto): Promise<JobDto> {
-    return this.jobService.create(createJobDto);
+    return this.jobService.createJob(createJobDto);
   }
 
   @Get()
@@ -79,18 +79,18 @@ export class JobController {
     @Query('paginate', new DefaultValuePipe(false)) paginate: boolean,
   ): Promise<JobDto[] | Page<JobDto>> {
     return paginate
-      ? this.jobService.findAllPaginated(page, size)
-      : this.jobService.search(searchJobDto);
+      ? this.jobService.getJobsPaginated(page, size)
+      : this.jobService.searchJob(searchJobDto);
   }
 
   @Get(':id')
   @ApiOperation({ summary: '특정 작업 조회' })
   @ApiParam({ name: 'id', description: '작업 ID' })
   async getJobById(@Param('id') id: string): Promise<JobDto> {
-    return this.jobService.findById(id);
+    return this.jobService.getJobById(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @ApiOperation({ summary: '작업 정보 업데이트' })
   @ApiParam({ name: 'id', description: '작업 ID' })
   @ApiBody({ type: UpdateJobDto })
@@ -98,7 +98,7 @@ export class JobController {
     @Param('id') id: string,
     @Body() updateJobDto: UpdateJobDto,
   ): Promise<JobDto> {
-    return this.jobService.update(id, updateJobDto);
+    return this.jobService.updateJob(id, updateJobDto);
   }
 
   @Patch(':id/complete')
@@ -115,7 +115,7 @@ export class JobController {
     return this.jobService.cancelJob(id);
   }
 
-  @Put(':id/reopen')
+  @Patch(':id/reopen')
   @ApiOperation({ summary: '취소된 작업 재개' })
   @ApiParam({ name: 'id', description: '작업 ID' })
   async reopenJob(@Param('id') id: string): Promise<JobDto> {
@@ -128,6 +128,6 @@ export class JobController {
   @ApiParam({ name: 'id', description: '작업 ID' })
   @ApiNoContentResponse({ description: '작업이 성공적으로 삭제됨' })
   async deleteJob(@Param('id') id: string): Promise<void> {
-    await this.jobService.delete(id);
+    await this.jobService.deleteJob(id);
   }
 }
