@@ -170,9 +170,6 @@ export class ResponseCode {
     },
   };
 
-  /**
-   * 응답 코드에 해당하는 세부정보를 조회합니다.
-   */
   static getResponseCodeDetails(code: string): ResponseCodeDetails | undefined {
     return this.RESPONSE_MESSAGES[code];
   }

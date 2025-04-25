@@ -10,7 +10,8 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   HttpCode,
-  HttpStatus, Patch,
+  HttpStatus,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,

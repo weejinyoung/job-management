@@ -210,23 +210,17 @@ export class JsonJobRepository implements JobRepository {
 
   async findAllPaginated(page: number, size: number): Promise<Page<Job>> {
     try {
-      // 1. 데이터베이스에서 모든 키를 가져옵니다
       const jobsObj = (await this.db.getData(this.JOB_MAP_PATH)) as Record<
         string,
         JobData
       >;
       const keys = Object.keys(jobsObj);
 
-      // 2. 전체 요소 수와 페이지 계산
       const totalElements = keys.length;
       const totalPages = Math.ceil(totalElements / size);
-
-      // 3. 현재 페이지에 필요한 키만 선택
       const startIndex = page * size;
       const endIndex = Math.min(startIndex + size, totalElements);
       const pageKeys = keys.slice(startIndex, endIndex);
-
-      // 4. 선택된 키에 해당하는 작업 데이터만 가져오기
       const paginatedJobs: Job[] = [];
       for (const key of pageKeys) {
         const jobData = (await this.db.getData(
@@ -234,8 +228,6 @@ export class JsonJobRepository implements JobRepository {
         )) as JobData;
         paginatedJobs.push(jobFromJSON(jobData));
       }
-
-      // 5. 페이지 객체 반환
       return new Page<Job>(paginatedJobs, {
         totalElements,
         totalPages,
@@ -281,17 +273,12 @@ export class JsonJobRepository implements JobRepository {
         if (error instanceof AppException) {
           throw error;
         }
-
-        // 작업 저장
         await this.db.push(
           `${this.JOB_MAP_PATH}/${job.id}`,
           jobToJSON(job),
           false,
         );
-
-        // 상태 인덱스에 추가
         await this.addToStatusIndex(job.id, job.status);
-
         return job;
       }
     } catch (error) {
@@ -305,20 +292,17 @@ export class JsonJobRepository implements JobRepository {
   async update(job: Job): Promise<Job> {
     try {
       try {
-        // 기존 작업 데이터 가져오기
         const existingJobData = (await this.db.getData(
           `${this.JOB_MAP_PATH}/${job.id}`,
         )) as JobData;
         const oldStatus = existingJobData.status as JobStatusType;
 
-        // 작업 업데이트
         await this.db.push(
           `${this.JOB_MAP_PATH}/${job.id}`,
           jobToJSON(job),
           false,
         );
 
-        // 상태가 변경되었으면 인덱스 업데이트
         if (oldStatus !== job.status) {
           await this.updateStatusIndex(job.id, oldStatus, job.status);
         }
@@ -338,16 +322,13 @@ export class JsonJobRepository implements JobRepository {
   async delete(id: string): Promise<boolean> {
     try {
       try {
-        // 기존 작업 데이터 가져오기
         const jobData = (await this.db.getData(
           `${this.JOB_MAP_PATH}/${id}`,
         )) as JobData;
         const status = jobData.status as JobStatusType;
 
-        // 작업 삭제
         await this.db.delete(`${this.JOB_MAP_PATH}/${id}`);
 
-        // 상태 인덱스에서 제거
         await this.removeFromStatusIndex(id, status);
 
         return true;
@@ -479,6 +460,38 @@ export class JsonJobRepository implements JobRepository {
         return [];
       }
       throw error;
+    }
+  }
+
+  // 테스트용
+  async removeFromAllStatusIndexes(jobIds: string[]): Promise<void> {
+    try {
+      if (jobIds.length === 0) return;
+
+      const jobIdsSet = new Set(jobIds);
+
+      // 모든 상태 인덱스에서 제거
+      for (const status of [
+        JobStatus.PENDING,
+        JobStatus.COMPLETED,
+        JobStatus.CANCELED,
+      ]) {
+        try {
+          const indexPath = `${this.STATUS_INDEX_PATH}/${status}`;
+          const currentIds = (await this.db.getData(indexPath)) as string[];
+
+          // 제거할 ID를 필터링
+          const newIds = currentIds.filter((id) => !jobIdsSet.has(id));
+
+          // 변경이 있을 경우에만 업데이트
+          if (currentIds.length !== newIds.length) {
+            await this.db.push(indexPath, newIds, true);
+          }
+        } catch (error) {}
+      }
+    } catch (error) {
+      console.error('모든 인덱스에서 작업 제거 중 오류:', error);
+      throw new AppException(ResponseCode.JSON_DB_ERROR);
     }
   }
 }

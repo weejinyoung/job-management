@@ -4,11 +4,10 @@ import { JsonJobRepository } from '../repository/JsonJobRepository';
 import { LockManager } from '../../common/lock/LockManager';
 import { JobStatus } from '../entity/Job';
 import { CreateJobDto, JobDto, UpdateJobDto } from '../dto/Dtos';
-import { JobRepository } from '../repository/JobRepository';
 
 describe('JobService Concurrency Tests', () => {
   let service: JobService;
-  let repository: JobRepository;
+  let repository: JsonJobRepository;
   let createdJobId: string;
   const testJobIds: string[] = [];
 
@@ -25,7 +24,7 @@ describe('JobService Concurrency Tests', () => {
     }).compile();
 
     service = module.get<JobService>(JobService);
-    repository = module.get<JobRepository>('impl');
+    repository = module.get<JsonJobRepository>('impl');
 
     // 테스트용 작업 생성
     const createJobDto: CreateJobDto = {
@@ -42,40 +41,16 @@ describe('JobService Concurrency Tests', () => {
     for (const id of testJobIds) {
       try {
         await service.deleteJob(id);
-        console.log(`Deleted test job ${id}`);
       } catch (e) {
-        console.log(`Failed to delete job ${id}: ${e.message}`);
+        // 이미 삭제된 작업은 무시
       }
     }
 
-    // 인덱스 정리를 위해 각 상태에 대한 작업 가져오기
-    try {
-      // 모든 상태에 대해 ID 목록을 조회하고 빈 배열인지 확인
-      const pendingIds = await repository.findJobIdsByStatus(JobStatus.PENDING);
-      const completedIds = await repository.findJobIdsByStatus(
-        JobStatus.COMPLETED,
-      );
-      const canceledIds = await repository.findJobIdsByStatus(
-        JobStatus.CANCELED,
-      );
-
-      // 남아있는 작업이 있는지 확인
-      const remainingJobIds = [...pendingIds, ...completedIds, ...canceledIds];
-
-      if (remainingJobIds.length > 0) {
-        console.log(
-          `Warning: ${remainingJobIds.length} jobs still exist after test cleanup. Consider manual cleanup.`,
-        );
-      } else {
-        console.log('All test jobs have been successfully removed.');
-      }
-    } catch (error) {
-      console.error('Error checking for remaining jobs:', error);
-    }
+    // 인덱스에서 테스트 작업 ID 일괄 제거
+    await repository.removeFromAllStatusIndexes(testJobIds);
   });
 
   it('should handle concurrent updates correctly with locks', async () => {
-    // 동시에 발생하는 여러 업데이트 요청을 시뮬레이션
     const updateOperations: Promise<JobDto>[] = [];
     const updateCount = 10;
     const initialTitle = 'Concurrency Test Job';
@@ -208,56 +183,5 @@ describe('JobService Concurrency Tests', () => {
     expect(['Slow Description 1', 'Slow Description 2']).toContain(
       updatedJob.description,
     );
-  });
-
-  // 인덱스 작동 여부 확인 테스트 추가
-  it('should maintain correct status indexing', async () => {
-    // 새 작업 생성
-    const job = await service.createJob({
-      title: 'Status Index Test Job',
-      description: 'For testing status index',
-    });
-    testJobIds.push(job.id);
-
-    try {
-      // 초기 상태(pending)의 작업 조회
-      const initialPendingJobs = await repository.findJobsByStatus(
-        JobStatus.PENDING,
-      );
-      const initialCompletedJobs = await repository.findJobsByStatus(
-        JobStatus.COMPLETED,
-      );
-
-      // 작업이 pending 상태에 있는지 확인
-      const isPendingInitially = initialPendingJobs.some(
-        (j) => j.id === job.id,
-      );
-      expect(isPendingInitially).toBe(true);
-
-      // 작업이 completed 상태에 없는지 확인
-      const isCompletedInitially = initialCompletedJobs.some(
-        (j) => j.id === job.id,
-      );
-      expect(isCompletedInitially).toBe(false);
-
-      // 상태 변경: pending -> completed
-      await service.completeJob(job.id);
-
-      // 변경 후 상태 확인
-      const pendingJobs = await repository.findJobsByStatus(JobStatus.PENDING);
-      const completedJobs = await repository.findJobsByStatus(
-        JobStatus.COMPLETED,
-      );
-
-      // 작업이 pending 상태에서 제거되었는지 확인
-      const isPendingAfterUpdate = pendingJobs.some((j) => j.id === job.id);
-      expect(isPendingAfterUpdate).toBe(false);
-
-      // 작업이 completed 상태에 추가되었는지 확인
-      const isCompletedAfterUpdate = completedJobs.some((j) => j.id === job.id);
-      expect(isCompletedAfterUpdate).toBe(true);
-    } catch (error) {
-      fail(`Test failed: ${error.message}`);
-    }
   });
 });

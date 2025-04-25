@@ -19,18 +19,13 @@ export function jobToJSON(job: Job): any {
 
 export function jobFromJSON(data: any): Job {
   const job = new Job(data.title, data.description);
-
   job.id = data.id;
-
   job.status = data.status as JobStatusType;
-
   if (data.createdAt) {
     job.createdAt = new Date(data.createdAt);
   }
-
   if (data.updatedAt) {
     job.updatedAt = new Date(data.updatedAt);
   }
-
   return job;
 }
