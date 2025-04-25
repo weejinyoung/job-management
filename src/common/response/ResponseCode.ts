@@ -18,6 +18,7 @@ export class ResponseCode {
   static readonly UNAUTHORIZED = '9403';
   static readonly NOT_FOUND = '9404';
   static readonly REQUEST_TIMEOUT = '9900';
+  static readonly JSON_DB_ERROR = '9901';
   static readonly INTERNAL_SERVER_ERROR = '9999';
 
   // Job 모듈 에러 코드 (2000~2999)
@@ -84,6 +85,11 @@ export class ResponseCode {
       code: ResponseCode.REQUEST_TIMEOUT,
       message: '일시적인 에러가 발생하였습니다. 잠시 후 다시 시도해주세요.',
       httpStatus: HttpStatus.REQUEST_TIMEOUT,
+    },
+    [ResponseCode.JSON_DB_ERROR]: {
+      code: ResponseCode.JSON_DB_ERROR,
+      message: '데이터베이스 에러가 발생하였습니다.',
+      httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
     },
     [ResponseCode.INTERNAL_SERVER_ERROR]: {
       code: ResponseCode.INTERNAL_SERVER_ERROR,

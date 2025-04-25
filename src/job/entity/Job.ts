@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { BaseEntity } from '../../common/entity/BaseEntity';
-import { AppException } from 'src/common/exception/AppException';
+import { AppException } from '../../common/exception/AppException';
 import { ResponseCode } from '../../common/response/ResponseCode';
 
 export type JobStatusType = 'pending' | 'completed' | 'canceled';

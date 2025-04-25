@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { AppException } from 'src/common/exception/AppException';
 import { ResponseCode } from '../response/ResponseCode';
+import { AppException } from '../exception/AppException';
 
 interface Lock {
   lockerId: string;
