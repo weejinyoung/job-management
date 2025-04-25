@@ -22,14 +22,14 @@
 
 작업 정보를 나타내는 응답 객체입니다.
 
-| 속성 이름 | 타입 | 설명 | 예시 | 제약 조건/설명 |
-| --- | --- | --- | --- | --- |
-| `id` | `string` | 작업 ID | `a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6` | UUID 형식 예상 |
-| `title` | `string` | 작업 제목 | `데이터베이스 마이그레이션` |  |
-| `description` | `string` | 작업 설명 | `기존 MySQL에서 PostgreSQL로 데이터 마이그레이션` |  |
+| 속성 이름 | 타입 | 설명 | 예시 | 제약 조건/설명                                 |
+| --- | --- | --- | --- |------------------------------------------|
+| `id` | `string` | 작업 ID | `a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6` | UUID 형식 예상                               |
+| `title` | `string` | 작업 제목 | `데이터베이스 마이그레이션` | 비어있으면 안됨, 문자열                            |
+| `description` | `string` | 작업 설명 | `기존 MySQL에서 PostgreSQL로 데이터 마이그레이션` | 비어있으면 안됨, 문자열                             |
 | `status` | `JobStatusType` | 작업 상태 | `pending` | `pending`, `completed`, `cancelled` 중 하나 |
-| `createdAt` | `Date` | 작업 생성 시간 | `2023-04-22T12:34:56.789Z` | ISO 8601 형식 |
-| `updatedAt` | `Date` | 작업 수정 시간 | `2023-04-22T12:34:56.789Z` | ISO 8601 형식 |
+| `createdAt` | `Date` | 작업 생성 시간 | `2023-04-22T12:34:56.789Z` | ISO 8601 형식                              |
+| `updatedAt` | `Date` | 작업 수정 시간 | `2023-04-22T12:34:56.789Z` | ISO 8601 형식                              |
 
 ### 1. 새로운 작업 생성
 
