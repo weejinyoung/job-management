@@ -111,19 +111,13 @@ export class JobService {
   }
 
   async completeJobs(): Promise<number> {
-    // 1. 대기 상태인 작업 ID만 먼저 조회
     const pendingJobIds = await this.jobRepository.findJobIdsByStatus(
       JobStatus.PENDING,
     );
-
-    // 작업이 없으면 바로 반환
     if (pendingJobIds.length === 0) {
       return 0;
     }
-
-    // 2. 여러 작업에 대한 락 획득 및 작업 수행
     return await this.lockManager.withMultipleLocks(pendingJobIds, async () => {
-      // 3. 락 획득 후 다시 최신 상태의 작업들을 조회
       const jobsToUpdate =
         await this.jobRepository.findJobsByIds(pendingJobIds);
 
@@ -135,15 +129,10 @@ export class JobService {
       if (pendingJobs.length === 0) {
         return 0;
       }
-
-      // 4. 각 작업을 완료 상태로 변경
       for (const job of pendingJobs) {
         job.complete();
       }
-
-      // 변경된 작업들 저장
       await this.jobRepository.saveAll(pendingJobs);
-
       return pendingJobs.length;
     });
   }
