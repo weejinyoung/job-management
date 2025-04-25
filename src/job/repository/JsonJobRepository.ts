@@ -4,7 +4,7 @@ import { Config } from 'node-json-db/dist/lib/JsonDBConfig';
 import { Job, JobStatusType } from '../entity/Job';
 import { JobRepository } from './JobRepository';
 import { AppException } from 'src/common/exception/AppException';
-import { jobFromJSON, jobToJSON } from './EntityToJsonConverter';
+import { jobFromJSON, jobToJSON } from './JobEntityToJsonConverter';
 import { Page } from '../../common/response/Page';
 import { ResponseCode } from '../../common/response/ResponseCode';
 
