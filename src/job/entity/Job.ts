@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { BaseEntity } from '../../common/entity/BaseEntity';
-import { AppException } from 'src/common/exception/BaseException';
-import { JobResponseCode } from '../response/JobResponseCode';
+import { AppException } from 'src/common/exception/AppException';
+import { ResponseCode } from '../../common/response/ResponseCode';
 
 export type JobStatusType = 'pending' | 'completed' | 'canceled';
 
@@ -35,9 +35,9 @@ export class Job extends BaseEntity {
   complete(): void {
     switch (this.status) {
       case JobStatus.CANCELED:
-        throw new AppException(JobResponseCode.CANNOT_COMPLETE_CANCELED_JOB);
+        throw new AppException(ResponseCode.CANNOT_COMPLETE_CANCELED_JOB);
       case JobStatus.COMPLETED:
-        throw new AppException(JobResponseCode.ALREADY_COMPLETED_JOB);
+        throw new AppException(ResponseCode.ALREADY_COMPLETED_JOB);
       case JobStatus.PENDING:
         this.status = JobStatus.COMPLETED;
         this.updateTimestamp();
@@ -48,9 +48,9 @@ export class Job extends BaseEntity {
   cancel(): void {
     switch (this.status) {
       case JobStatus.COMPLETED:
-        throw new AppException(JobResponseCode.CANNOT_CANCEL_COMPLETED_JOB);
+        throw new AppException(ResponseCode.CANNOT_CANCEL_COMPLETED_JOB);
       case JobStatus.CANCELED:
-        throw new AppException(JobResponseCode.ALREADY_CANCELED_JOB);
+        throw new AppException(ResponseCode.ALREADY_CANCELED_JOB);
       case JobStatus.PENDING:
         this.status = JobStatus.CANCELED;
         this.updateTimestamp();
@@ -61,9 +61,9 @@ export class Job extends BaseEntity {
   reopen(): void {
     switch (this.status) {
       case JobStatus.COMPLETED:
-        throw new AppException(JobResponseCode.CANNOT_REOPEN_COMPLETED_JOB);
+        throw new AppException(ResponseCode.CANNOT_REOPEN_COMPLETED_JOB);
       case JobStatus.PENDING:
-        throw new AppException(JobResponseCode.CANNOT_REOPEN_PENDING_JOB);
+        throw new AppException(ResponseCode.CANNOT_REOPEN_PENDING_JOB);
       case JobStatus.CANCELED:
         this.status = JobStatus.PENDING;
         this.updateTimestamp();
@@ -73,7 +73,7 @@ export class Job extends BaseEntity {
 
   updateDescription(description: string): void {
     if (!description || description.trim() === '') {
-      throw new AppException(JobResponseCode.EMPTY_DESCRIPTION);
+      throw new AppException(ResponseCode.EMPTY_DESCRIPTION);
     }
     this.description = description;
     this.updateTimestamp();
@@ -81,7 +81,7 @@ export class Job extends BaseEntity {
 
   updateTitle(title: string): void {
     if (!title || title.trim() === '') {
-      throw new AppException(JobResponseCode.EMPTY_TITLE);
+      throw new AppException(ResponseCode.EMPTY_TITLE);
     }
     this.title = title;
     this.updateTimestamp();

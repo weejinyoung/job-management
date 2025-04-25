@@ -1,4 +1,4 @@
-import { BaseResponseCode } from './BaseResponseCode';
+import { ResponseCode } from './ResponseCode';
 
 export class ResponseDto<T> {
   responseCode: string;
@@ -12,18 +12,16 @@ export class ResponseDto<T> {
   }
 
   static ok<T>(data?: T): ResponseDto<T> {
-    const details = BaseResponseCode.getResponseCodeDetails(
-      BaseResponseCode.OK,
-    );
+    const details = ResponseCode.getResponseCodeDetails(ResponseCode.OK);
     return new ResponseDto<T>(
-      details?.code || BaseResponseCode.OK,
+      details?.code || ResponseCode.OK,
       details?.message || '정상 처리되었습니다.',
       data,
     );
   }
 
   static okWithCode<T>(responseCode: string, data?: T): ResponseDto<T> {
-    const details = BaseResponseCode.getResponseCodeDetails(responseCode);
+    const details = ResponseCode.getResponseCodeDetails(responseCode);
     return new ResponseDto<T>(
       details?.code || responseCode,
       details?.message || '정상 처리되었습니다.',
@@ -32,7 +30,7 @@ export class ResponseDto<T> {
   }
 
   static error<T>(responseCode: string): ResponseDto<T> {
-    const details = BaseResponseCode.getResponseCodeDetails(responseCode);
+    const details = ResponseCode.getResponseCodeDetails(responseCode);
     return new ResponseDto<T>(
       details?.code || responseCode,
       details?.message || '오류가 발생했습니다.',

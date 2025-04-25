@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { AppException } from 'src/common/exception/BaseException';
-import { JobResponseCode } from 'src/job/response/JobResponseCode';
+import { AppException } from 'src/common/exception/AppException';
+import { ResponseCode } from '../response/ResponseCode';
 
 interface Lock {
   lockerId: string;
@@ -22,7 +22,7 @@ export class LockManager {
     // 락 획득 시도
     const lockAcquired = await this.acquireLock(resourceId, lockerId, timeout);
     if (!lockAcquired) {
-      throw new AppException(JobResponseCode.LOCK_ACQUISITION_FAILED);
+      throw new AppException(ResponseCode.LOCK_ACQUISITION_FAILED);
     }
 
     try {
@@ -55,7 +55,7 @@ export class LockManager {
           for (const acquiredResourceId of acquiredLocks) {
             this.releaseLock(acquiredResourceId, lockerId);
           }
-          throw new AppException(JobResponseCode.LOCK_ACQUISITION_FAILED);
+          throw new AppException(ResponseCode.LOCK_ACQUISITION_FAILED);
         }
         acquiredLocks.push(resourceId);
       }

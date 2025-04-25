@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Job, JobStatus } from '../entity/Job';
-import { AppException } from '../../common/exception/BaseException';
-import { JobResponseCode } from '../response/JobResponseCode';
+import { AppException } from '../../common/exception/AppException';
 import { CreateJobDto, JobDto, SearchJobDto, UpdateJobDto } from '../dto/Dtos';
 import { JobRepository } from '../repository/JobRepository';
 import { Page } from '../../common/response/Page';
 import { LockManager } from '../../common/lock/LockManager';
+import { ResponseCode } from '../../common/response/ResponseCode';
 
 @Injectable()
 export class JobService {
@@ -41,7 +41,7 @@ export class JobService {
   async getJobById(id: string): Promise<JobDto> {
     const job = await this.jobRepository.findById(id);
     if (!job) {
-      throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+      throw new AppException(ResponseCode.JOB_NOT_FOUND);
     }
     return JobDto.fromEntity(job);
   }
@@ -61,7 +61,7 @@ export class JobService {
     return await this.lockManager.withLock(id, async () => {
       const job = await this.jobRepository.findById(id);
       if (!job) {
-        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+        throw new AppException(ResponseCode.JOB_NOT_FOUND);
       }
       if (updateJobDto.title) {
         job.updateTitle(updateJobDto.title);
@@ -78,7 +78,7 @@ export class JobService {
     return await this.lockManager.withLock(id, async () => {
       const job = await this.jobRepository.findById(id);
       if (!job) {
-        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+        throw new AppException(ResponseCode.JOB_NOT_FOUND);
       }
       job.complete();
       const updatedJob = await this.jobRepository.update(job);
@@ -90,7 +90,7 @@ export class JobService {
     return await this.lockManager.withLock(id, async () => {
       const job = await this.jobRepository.findById(id);
       if (!job) {
-        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+        throw new AppException(ResponseCode.JOB_NOT_FOUND);
       }
       job.cancel();
       const updatedJob = await this.jobRepository.update(job);
@@ -102,7 +102,7 @@ export class JobService {
     return await this.lockManager.withLock(id, async () => {
       const job = await this.jobRepository.findById(id);
       if (!job) {
-        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+        throw new AppException(ResponseCode.JOB_NOT_FOUND);
       }
       job.reopen();
       const updatedJob = await this.jobRepository.update(job);
@@ -141,7 +141,7 @@ export class JobService {
     return this.lockManager.withLock(id, async () => {
       const job = await this.jobRepository.findById(id);
       if (!job) {
-        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+        throw new AppException(ResponseCode.JOB_NOT_FOUND);
       }
       return this.jobRepository.delete(id);
     });

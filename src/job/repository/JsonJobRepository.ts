@@ -3,11 +3,10 @@ import { JsonDB } from 'node-json-db';
 import { Config } from 'node-json-db/dist/lib/JsonDBConfig';
 import { Job, JobStatusType } from '../entity/Job';
 import { JobRepository } from './JobRepository';
-import { AppException } from 'src/common/exception/BaseException';
-import { BaseResponseCode } from 'src/common/response/BaseResponseCode';
-import { JobResponseCode } from '../response/JobResponseCode';
+import { AppException } from 'src/common/exception/AppException';
 import { jobFromJSON, jobToJSON } from './EntityToJsonConverter';
 import { Page } from '../../common/response/Page';
+import { ResponseCode } from '../../common/response/ResponseCode';
 
 @Injectable()
 export class JsonJobRepository implements JobRepository {
@@ -41,7 +40,7 @@ export class JsonJobRepository implements JobRepository {
         );
       }
     } catch (error) {
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -54,7 +53,7 @@ export class JsonJobRepository implements JobRepository {
       if (error.message && error.message.includes("Can't find dataPath")) {
         return [];
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -99,7 +98,7 @@ export class JsonJobRepository implements JobRepository {
           page,
         });
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -111,7 +110,7 @@ export class JsonJobRepository implements JobRepository {
       if (error.message && error.message.includes("Can't find dataPath")) {
         return null;
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -119,7 +118,7 @@ export class JsonJobRepository implements JobRepository {
     try {
       try {
         await this.db.getData(`${this.JOB_MAP_PATH}/${job.id}`);
-        throw new AppException(JobResponseCode.JOB_ALREADY_EXISTS);
+        throw new AppException(ResponseCode.JOB_ALREADY_EXISTS);
       } catch (error) {
         if (error instanceof AppException) {
           throw error;
@@ -135,7 +134,7 @@ export class JsonJobRepository implements JobRepository {
       if (error instanceof AppException) {
         throw error;
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -150,13 +149,13 @@ export class JsonJobRepository implements JobRepository {
         );
         return job;
       } catch (error) {
-        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+        throw new AppException(ResponseCode.JOB_NOT_FOUND);
       }
     } catch (error) {
       if (error instanceof AppException) {
         throw error;
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -167,13 +166,13 @@ export class JsonJobRepository implements JobRepository {
         await this.db.delete(`${this.JOB_MAP_PATH}/${id}`);
         return true;
       } catch (error) {
-        throw new AppException(JobResponseCode.JOB_NOT_FOUND);
+        throw new AppException(ResponseCode.JOB_NOT_FOUND);
       }
     } catch (error) {
       if (error instanceof AppException) {
         throw error;
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -184,7 +183,7 @@ export class JsonJobRepository implements JobRepository {
         job.title.toLowerCase().includes(title.toLowerCase()),
       );
     } catch (error) {
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -207,7 +206,7 @@ export class JsonJobRepository implements JobRepository {
 
       return jobs;
     } catch (error) {
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -231,7 +230,7 @@ export class JsonJobRepository implements JobRepository {
       if (error.message && error.message.includes("Can't find dataPath")) {
         return [];
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -262,7 +261,7 @@ export class JsonJobRepository implements JobRepository {
       if (error instanceof AppException) {
         throw error;
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -285,7 +284,7 @@ export class JsonJobRepository implements JobRepository {
       if (error.message && error.message.includes("Can't find dataPath")) {
         return [];
       }
-      throw new AppException(BaseResponseCode.INTERNAL_SERVER_ERROR);
+      throw new AppException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 }

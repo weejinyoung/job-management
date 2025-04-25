@@ -3,14 +3,16 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  HttpStatus,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ResponseDto } from './ResponseDto';
 import { CommonHeader, Page } from './Page';
+import { ResponseCode } from './ResponseCode';
 
 @Injectable()
-export class TransformInterceptor<T>
+export class ResponseTransformInterceptor<T>
   implements NestInterceptor<T, ResponseDto<T>>
 {
   intercept(
@@ -20,20 +22,27 @@ export class TransformInterceptor<T>
     return next.handle().pipe(
       map((data) => {
         const response = context.switchToHttp().getResponse();
+        let responseData: ResponseDto<any>;
+        let httpStatus: HttpStatus = HttpStatus.OK; // 기본값
 
-        // If data is null or undefined, return success response with null data
         if (data === null || data === undefined) {
-          return ResponseDto.ok<any>(null);
-        }
+          responseData = ResponseDto.ok<any>(null);
+          // OK 응답의 HTTP 상태 코드 조회
+          const details = ResponseCode.getResponseCodeDetails(ResponseCode.OK);
+          if (details?.httpStatus) {
+            httpStatus = details.httpStatus;
+          }
+        } else if (data instanceof ResponseDto) {
+          responseData = data;
 
-        // If the data is already a ResponseDto, return it as is
-        if (data instanceof ResponseDto) {
-          return data;
-        }
-
-        // Check if the data is a Page object
-        if (data instanceof Page) {
-          // Add pagination headers
+          // ResponseDto에 대응하는 응답 코드의 HTTP 상태 코드 조회
+          const details = ResponseCode.getResponseCodeDetails(
+            data.responseCode,
+          );
+          if (details?.httpStatus) {
+            httpStatus = details.httpStatus;
+          }
+        } else if (data instanceof Page) {
           response.header(
             CommonHeader.PAGE_TOTAL_PAGES,
             data.getTotalPages().toString(),
@@ -42,13 +51,27 @@ export class TransformInterceptor<T>
             CommonHeader.PAGE_TOTAL_ELEMENTS,
             data.getTotalElements().toString(),
           );
+          responseData = ResponseDto.ok<any>(data.toArray());
 
-          // Return only the array of items from the page
-          return ResponseDto.ok<any>(data.toArray());
+          // OK 응답의 HTTP 상태 코드 조회
+          const details = ResponseCode.getResponseCodeDetails(ResponseCode.OK);
+          if (details?.httpStatus) {
+            httpStatus = details.httpStatus;
+          }
+        } else {
+          responseData = ResponseDto.ok<T>(data as T);
+
+          // OK 응답의 HTTP 상태 코드 조회
+          const details = ResponseCode.getResponseCodeDetails(ResponseCode.OK);
+          if (details?.httpStatus) {
+            httpStatus = details.httpStatus;
+          }
         }
 
-        // Otherwise, wrap the data in a success ResponseDto
-        return ResponseDto.ok<T>(data as T);
+        // 상태 코드를 HTTP 응답에 설정
+        response.status(httpStatus);
+
+        return responseData;
       }),
     );
   }
